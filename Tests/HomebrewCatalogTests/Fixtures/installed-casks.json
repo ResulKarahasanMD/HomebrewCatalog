@@ -1,0 +1,26 @@
+{
+  "casks": [
+    {
+      "token": "visual-studio-code",
+      "full_token": "homebrew/cask/visual-studio-code",
+      "name": ["Visual Studio Code"],
+      "desc": "Open-source code editor",
+      "homepage": "https://code.visualstudio.com/",
+      "version": "1.99.0",
+      "installed": "1.98.2",
+      "outdated": true,
+      "auto_updates": true
+    },
+    {
+      "token": "iterm2",
+      "full_token": "homebrew/cask/iterm2",
+      "name": ["iTerm2"],
+      "desc": "Terminal emulator",
+      "homepage": "https://iterm2.com/",
+      "version": "3.5.0",
+      "installed": "3.5.0",
+      "outdated": false,
+      "auto_updates": false
+    }
+  ]
+}

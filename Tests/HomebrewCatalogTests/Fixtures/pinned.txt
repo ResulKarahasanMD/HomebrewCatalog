@@ -1,0 +1,2 @@
+ripgrep
+openssl@3

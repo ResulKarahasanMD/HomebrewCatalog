@@ -1,0 +1,25 @@
+{
+  "formulae": [
+    {
+      "name": "wget",
+      "installed_versions": ["1.21.3"],
+      "current_version": "1.25.0",
+      "pinned": false
+    },
+    {
+      "name": "openssl@3",
+      "installed_versions": ["3.1.4"],
+      "current_version": "3.5.0",
+      "pinned": true
+    }
+  ],
+  "casks": [
+    {
+      "name": "google-chrome",
+      "installed_versions": ["126.0.0"],
+      "current_version": "127.0.1",
+      "pinned": false,
+      "pinned_version": null
+    }
+  ]
+}

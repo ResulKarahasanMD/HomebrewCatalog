@@ -1,0 +1,42 @@
+{
+  "formulae": [
+    {
+      "name": "ripgrep",
+      "full_name": "homebrew/core/ripgrep",
+      "desc": "Line-oriented search tool",
+      "homepage": "https://github.com/BurntSushi/ripgrep",
+      "license": "MIT",
+      "pinned": false,
+      "outdated": true,
+      "installed": [
+        {
+          "version": "13.0.0",
+          "installed_as_dependency": false,
+          "installed_on_request": true
+        }
+      ],
+      "versions": {
+        "stable": "14.1.1"
+      }
+    },
+    {
+      "name": "oniguruma",
+      "full_name": "homebrew/core/oniguruma",
+      "desc": "Regular expressions library",
+      "homepage": "https://github.com/kkos/oniguruma",
+      "license": "BSD-2-Clause",
+      "pinned": true,
+      "outdated": false,
+      "installed": [
+        {
+          "version": "6.9.9",
+          "installed_as_dependency": true,
+          "installed_on_request": false
+        }
+      ],
+      "versions": {
+        "stable": "6.9.9"
+      }
+    }
+  ]
+}

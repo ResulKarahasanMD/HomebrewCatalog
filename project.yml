@@ -1,0 +1,65 @@
+name: HomebrewCatalog
+settings:
+  base:
+    # Replays unchanged Swift compilations from the cache after a clean build,
+    # a branch switch or a fresh worktree (measured 6.0 s -> 1.8 s on 2026-10-03).
+    COMPILATION_CACHE_ENABLE_CACHING: YES
+targets:
+  HomebrewCatalog:
+    type: application
+    platform: macOS
+    deploymentTarget: "27.0"
+    sources: [Sources/HomebrewCatalog]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.resulahmet.HomebrewCatalog
+      SWIFT_VERSION: "6.0"
+      SWIFT_STRICT_CONCURRENCY: complete
+      ENABLE_HARDENED_RUNTIME: YES
+      GENERATE_INFOPLIST_FILE: YES
+      # HomebrewCatalog does not ship App Intents / Shortcuts. These settings stop
+      # Xcode from emitting App Intents metadata and reduce AppKit linkd registration.
+      ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+      SWIFT_ENABLE_EMIT_CONST_VALUES: NO
+      SWIFT_EMIT_CONST_VALUE_PROTOCOLS: ""
+      OTHER_SWIFT_FLAGS:
+        - $(inherited)
+        - -Xfrontend
+        - -disable-autolink-framework
+        - -Xfrontend
+        - AppIntents
+      APP_SHORTCUTS_ENABLE_FLEXIBLE_MATCHING: NO
+    info:
+      path: Sources/HomebrewCatalog/Info.plist
+      properties:
+        LSMinimumSystemVersion: "27.0.1"
+        NSHumanReadableCopyright: "© 2026 Resul Ahmet Karahasan"
+        ITSAppUsesNonExemptEncryption: false
+        NSSupportsAutomaticGraphicsSwitching: true
+    entitlements:
+      path: Sources/HomebrewCatalog/HomebrewCatalog.entitlements
+    scheme:
+      testTargets:
+        - HomebrewCatalogTests
+      commandLineArguments:
+        - "-com.apple.CoreData.SQLDebug": "0"
+    dependencies:
+      - sdk: SwiftData.framework
+  HomebrewCatalogTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "27.0"
+    sources: [Tests/HomebrewCatalogTests]
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      SWIFT_VERSION: "6.0"
+      SWIFT_STRICT_CONCURRENCY: complete
+      PRODUCT_BUNDLE_IDENTIFIER: com.resulahmet.HomebrewCatalogTests
+      ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+      OTHER_SWIFT_FLAGS:
+        - $(inherited)
+        - -Xfrontend
+        - -disable-autolink-framework
+        - -Xfrontend
+        - AppIntents
+    dependencies:
+      - target: HomebrewCatalog

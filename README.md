@@ -38,7 +38,7 @@ The bundle identifier in it is the author's; change it if you sign the app yours
 ## Documents
 
 - [`Docs/PRD.md`](Docs/PRD.md): the original product requirements (written before the app grew local `brew` management).
-- [`Docs/Sidebar-Navigation.md`](Docs/Sidebar-Navigation.md): the sidebar selection architecture (in Turkish).
+- [`Docs/Sidebar-Navigation.md`](Docs/Sidebar-Navigation.md): the sidebar selection architecture.
 
 ## License
 

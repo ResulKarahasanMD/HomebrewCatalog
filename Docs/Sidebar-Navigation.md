@@ -1,19 +1,19 @@
-# Sidebar Navigasyonu
+# Sidebar Navigation
 
-Bu belge, HomebrewCatalog uygulamasındaki sol kenar çubuğu (sidebar) seçim mimarisini ve `NavigationSplitView` + `List(selection:)` yaklaşımından `HSplitView` + açık durum yönetimine geçişi açıklar.
+This document describes the selection architecture of the left sidebar in the HomebrewCatalog app and the move from the `NavigationSplitView` + `List(selection:)` approach to `HSplitView` + explicit state management.
 
-## Özet
+## Summary
 
-| Önceki | Yeni |
+| Before | After |
 |--------|------|
-| `NavigationSplitView` (3 sütun) | İç içe `HSplitView` (sidebar + içerik + detay) |
-| `@State selectedSection: SidebarSection?` (`ContentView` içinde) | `BrewStore.selectedSidebarSection: SidebarSection` |
-| `List(selection:)` + `.tag()` satır etiketleri | `Button` + `store.selectedSidebarSection = section` |
-| `SidebarSection` `ContentView` içinde nested enum | `Models/SidebarSection.swift` bağımsız enum |
+| `NavigationSplitView` (3 columns) | Nested `HSplitView` (sidebar + content + detail) |
+| `@State selectedSection: SidebarSection?` (in `ContentView`) | `BrewStore.selectedSidebarSection: SidebarSection` |
+| `List(selection:)` + `.tag()` row tags | `Button` + `store.selectedSidebarSection = section` |
+| `SidebarSection` as a nested enum in `ContentView` | `Models/SidebarSection.swift` as a standalone enum |
 
-**Motivasyon:** macOS’ta `.sidebar` stilinde `List(selection:)`, `.tag()` değerinin `@ViewBuilder` yardımcı fonksiyonunun içinde uygulanması durumunda seçimi sessizce yok sayabiliyordu; kullanıcı hiçbir bölüme tıklayamıyordu. Açık `Button` tabanlı seçim bu SwiftUI sınırını tamamen bypass eder.
+**Motivation:** On macOS, `List(selection:)` in the `.sidebar` style could silently ignore the selection when the `.tag()` value was applied inside a `@ViewBuilder` helper function; the user could not click any section. Explicit `Button`-based selection bypasses this SwiftUI limitation entirely.
 
-## Mimari
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -25,91 +25,91 @@ flowchart LR
         BS[BrewStore]
         SS[selectedSidebarSection]
     end
-    SV -->|tıklama| SS
+    SV -->|click| SS
     BS --> SS
     SS --> CV
     CV -->|switch| Views[DiscoverView / ItemListView / ...]
 ```
 
-### Dosyalar
+### Files
 
-| Dosya | Sorumluluk |
+| File | Responsibility |
 |-------|------------|
-| `Models/SidebarSection.swift` | Bölüm kimlikleri, SF Symbol ikonları, rozet sayıları |
-| `Views/SidebarView.swift` | Gruplu liste UI, seçim butonları, seçili satır vurgusu |
-| `Views/ContentView.swift` | `HSplitView` düzeni, bölüm → orta sütun view eşlemesi |
-| `ViewModels/BrewStore.swift` | `selectedSidebarSection` tek kaynak (single source of truth) |
+| `Models/SidebarSection.swift` | Section identifiers, SF Symbol icons, badge counts |
+| `Views/SidebarView.swift` | Grouped list UI, selection buttons, selected-row highlight |
+| `Views/ContentView.swift` | `HSplitView` layout, section → middle-column view mapping |
+| `ViewModels/BrewStore.swift` | `selectedSidebarSection` as the single source of truth |
 
-## Durum akışı
+## State flow
 
-1. Uygulama açıldığında `BrewStore.selectedSidebarSection` varsayılan olarak `.discover` değerindedir.
-2. Kullanıcı `SidebarView` içinde bir satıra tıkladığında `store.selectedSidebarSection` güncellenir.
-3. `ContentView.contentColumn` içindeki `switch store.selectedSidebarSection` ilgili view’ı oluşturur.
-4. `.id(store.selectedSidebarSection)` orta sütunun bölüm değişiminde yeniden oluşturulmasını sağlar.
-5. `onChange(of: store.selectedSidebarSection)` seçili paket kimliğini (`selectedItemID`) sıfırlar; bölümler arası geçişte eski detay kalıntısı kalmaz.
+1. When the app launches, `BrewStore.selectedSidebarSection` defaults to `.discover`.
+2. When the user clicks a row in `SidebarView`, `store.selectedSidebarSection` is updated.
+3. The `switch store.selectedSidebarSection` in `ContentView.contentColumn` builds the corresponding view.
+4. `.id(store.selectedSidebarSection)` forces the middle column to be rebuilt when the section changes.
+5. `onChange(of: store.selectedSidebarSection)` resets the selected package identifier (`selectedItemID`); no stale detail is left behind when switching between sections.
 
-## Bölüm → görünüm eşlemesi
+## Section → view mapping
 
-| Grup | `SidebarSection` | Orta sütun | Detay sütunu | Grid/List picker |
+| Group | `SidebarSection` | Middle column | Detail column | Grid/List picker |
 |------|------------------|------------|--------------|------------------|
-| Browse | `discover` | `DiscoverView` | Paket seçilirse `DetailView` | Hayır |
-| Browse | `categories` | `CategoryBrowserView` | Evet | Evet |
-| Browse | `formulas` | `ItemListView` (formulae) | Evet | Evet |
-| Browse | `casks` | `ItemListView` (casks) | Evet | Evet |
-| Installed | `installed` | `InstalledView` | Evet | Evet |
-| Installed | `outdated` | `OutdatedView` | Evet | Hayır |
-| Installed | `pinned` | `PinnedView` | Evet | Evet |
-| Installed | `leaves` | `LeavesView` | Evet | Evet |
-| Library | `favorites` | `FavoritesView` | Evet | Evet |
-| Library | `history` | `HistoryView` | Evet | Evet |
-| Library | `groups` | `GroupsView` | Evet | Evet |
-| Library | `actionHistory` | `ActionHistoryView` | Hayır | Hayır |
-| System | `services` | `ServicesView` | Hayır | Hayır |
-| System | `taps` | `TapsView` | Hayır | Hayır |
-| System | `masApps` | `MASView` | Hayır | Hayır |
-| System | `systemHealth` | `SystemHealthView` | Hayır | Hayır |
-| System | `settings` | `SettingsView` | Hayır | Hayır |
+| Browse | `discover` | `DiscoverView` | `DetailView` if a package is selected | No |
+| Browse | `categories` | `CategoryBrowserView` | Yes | Yes |
+| Browse | `formulas` | `ItemListView` (formulae) | Yes | Yes |
+| Browse | `casks` | `ItemListView` (casks) | Yes | Yes |
+| Installed | `installed` | `InstalledView` | Yes | Yes |
+| Installed | `outdated` | `OutdatedView` | Yes | No |
+| Installed | `pinned` | `PinnedView` | Yes | Yes |
+| Installed | `leaves` | `LeavesView` | Yes | Yes |
+| Library | `favorites` | `FavoritesView` | Yes | Yes |
+| Library | `history` | `HistoryView` | Yes | Yes |
+| Library | `groups` | `GroupsView` | Yes | Yes |
+| Library | `actionHistory` | `ActionHistoryView` | No | No |
+| System | `services` | `ServicesView` | No | No |
+| System | `taps` | `TapsView` | No | No |
+| System | `masApps` | `MASView` | No | No |
+| System | `systemHealth` | `SystemHealthView` | No | No |
+| System | `settings` | `SettingsView` | No | No |
 
-`showsViewModePicker` yalnızca grid/list geçişi destekleyen bölümlerde araç çubuğundaki segmented picker’ı gösterir.
+`showsViewModePicker` shows the segmented picker in the toolbar only for sections that support switching between grid and list.
 
-## Rozetler
+## Badges
 
-`SidebarSection.badgeCount(from:)` şu an yalnızca sayı gösterir:
+`SidebarSection.badgeCount(from:)` currently shows a count only for:
 
 - **Outdated** — `store.outdatedCount > 0`
 - **Installed** — `store.installedCount > 0`
 
-Sıfır veya `nil` olduğunda rozet gizlenir. Rozet, native `.badge()` yerine capsule arka planlı `Text` ile çizilir (sidebar `List` içinde tutarlı görünüm için).
+The badge is hidden when the count is zero or `nil`. Instead of the native `.badge()`, the badge is drawn as a `Text` with a capsule background (for a consistent look inside the sidebar `List`).
 
-## Yeni bölüm ekleme
+## Adding a new section
 
-1. `SidebarSection` enum’una yeni `case` ekle; `icon` switch’ine SF Symbol ata.
-2. Gerekirse `badgeCount(from:)` içine sayım mantığı ekle.
-3. `SidebarView` içinde uygun `Section` bloğuna `sidebarButton(.yeniBolum)` ekle.
-4. `ContentView.contentColumn` switch’ine karşılık gelen view’ı ekle.
-5. Grid/list picker gerekiyorsa `showsViewModePicker` switch’ine case ekle.
-6. `project.yml` / XcodeGen kullanıyorsanız yeni dosya eklediyseniz `xcodegen generate` çalıştırın.
+1. Add a new `case` to the `SidebarSection` enum; assign it an SF Symbol in the `icon` switch.
+2. If needed, add the counting logic to `badgeCount(from:)`.
+3. Add `sidebarButton(.yeniBolum)` to the appropriate `Section` block in `SidebarView`.
+4. Add the matching view to the `ContentView.contentColumn` switch.
+5. If a grid/list picker is needed, add a case to the `showsViewModePicker` switch.
+6. If you use `project.yml` / XcodeGen and added a new file, run `xcodegen generate`.
 
-## Neden `List(selection:)` kullanılmıyor?
+## Why not `List(selection:)`?
 
-Kök neden analizi özetle:
+Root-cause analysis in brief:
 
-- `.tag(section)` bir `@ViewBuilder` helper (`sidebarRow` / `row`) içindeyken macOS sidebar `List` seçim eşleştirmesi güvenilir çalışmıyor.
-- `ItemListView` aynı projede `List(selection:)` + satır içi `.tag(item.id)` ile **çalışıyor**; fark, tag’in doğrudan `List` gövdesinde olması.
-- Sidebar için alternatif düzeltmeler (optional cast tag, inline tag) denendi; kalıcı çözüm olarak explicit `Button` + `BrewStore` durumu tercih edildi.
+- When `.tag(section)` sits inside a `@ViewBuilder` helper (`sidebarRow` / `row`), selection matching in the macOS sidebar `List` does not work reliably.
+- In the same project, `ItemListView` **works** with `List(selection:)` + an inline `.tag(item.id)`; the difference is that the tag is directly in the `List` body.
+- Alternative fixes for the sidebar (an optional-cast tag, an inline tag) were tried; explicit `Button` + `BrewStore` state was chosen as the lasting solution.
 
-## Doğrulama kontrol listesi
+## Verification checklist
 
-Manuel test (`xcodebuild -scheme HomebrewCatalog build` sonrası):
+Manual test (after `xcodebuild -scheme HomebrewCatalog build`):
 
-- [ ] Her sidebar satırına tıklandığında orta sütun ilgili ekrana geçer.
-- [ ] Seçili satır accent renkli arka planla vurgulanır.
-- [ ] Bölüm değişince detay sütunu temizlenir (önceki paket detayı kalmaz).
-- [ ] Outdated / Installed rozetleri yüklendikten sonra doğru sayıyı gösterir.
-- [ ] Formulae / Casks listelerinde satır seçimi (`ItemListView`) hâlâ çalışır.
-- [ ] Araç çubuğu arama kutusu tüm bölümlerde `store.search` çağırır.
+- [ ] Clicking any sidebar row switches the middle column to the corresponding screen.
+- [ ] The selected row is highlighted with an accent-colored background.
+- [ ] When the section changes, the detail column is cleared (no detail of the previous package remains).
+- [ ] The Outdated / Installed badges show the correct count once loaded.
+- [ ] Row selection (`ItemListView`) in the Formulae / Casks lists still works.
+- [ ] The toolbar search field calls `store.search` in every section.
 
-## İlgili belgeler
+## Related documents
 
-- `Docs/PRD.md` — Ürün kapsamı ve genel mimari
-- `README.md` — Derleme ve test komutları
+- `Docs/PRD.md` — Product scope and overall architecture
+- `README.md` — Build and test commands

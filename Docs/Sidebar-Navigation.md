@@ -85,7 +85,7 @@ The badge is hidden when the count is zero or `nil`. Instead of the native `.bad
 
 1. Add a new `case` to the `SidebarSection` enum; assign it an SF Symbol in the `icon` switch.
 2. If needed, add the counting logic to `badgeCount(from:)`.
-3. Add `sidebarButton(.yeniBolum)` to the appropriate `Section` block in `SidebarView`.
+3. Add `sidebarButton(.newSection)` to the appropriate `Section` block in `SidebarView`.
 4. Add the matching view to the `ContentView.contentColumn` switch.
 5. If a grid/list picker is needed, add a case to the `showsViewModePicker` switch.
 6. If you use `project.yml` / XcodeGen and added a new file, run `xcodegen generate`.
